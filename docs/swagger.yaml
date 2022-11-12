@@ -1,0 +1,58 @@
+definitions:
+  main.CreateOrGetCustomer:
+    properties:
+      balance:
+        type: number
+      birth_date:
+        type: string
+      created_at:
+        type: string
+      firstname:
+        type: string
+      gender:
+        type: boolean
+      id:
+        type: integer
+      lastname:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  main.ResponseError:
+    properties:
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a Shop service Api
+  title: Swagger for Shop api
+  version: "1.0"
+paths:
+  /shop/customer/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get Customer Info by id
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.CreateOrGetCustomer'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ResponseError'
+      summary: Get customer Info by id
+      tags:
+      - customer
+swagger: "2.0"
