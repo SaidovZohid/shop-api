@@ -1,10 +1,11 @@
 package main
 
 import (
+	_ "golang/docs"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "golang/docs"
 )
 
 type handler struct {
@@ -22,6 +23,8 @@ func NewServer(db *DBManager) *gin.Engine {
 		db: db,
 	}
 	r.GET("/shop/customer/:id", h.GetCustomer)
+	
+
 	r.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	return r
 }

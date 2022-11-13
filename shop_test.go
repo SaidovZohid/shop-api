@@ -234,3 +234,86 @@ func TestGetAllProducts(t *testing.T) {
 	require.GreaterOrEqual(t, len(products.Products), 1)
 	deleteProduct(t, product_id)
 }
+
+func createOrder(t *testing.T) int64 {
+	order_id, err := dbManager.CreateOrder(&Order{
+		CustomerID: 1223,
+		Address: "Uchtepa tumani 30-13-83",
+		TotalAmount:  1000,
+		OrderItems: []*OrderItem{
+			{
+				ProductName: "Iphone 13 Pro Max",
+				ProductID: 50,
+				Count: 2,
+				TotalPrice: 500,
+				Status: true,
+			},
+		},
+	})
+	require.NoError(t, err)
+	return order_id
+}
+
+func deleteOrder(t *testing.T, order_id int64) {
+	err := dbManager.DeleteOrder(order_id)
+	require.NoError(t, err)
+}
+
+func TestCreateOrder(t *testing.T) {
+	order_id := createOrder(t)
+	deleteOrder(t, order_id)
+}
+
+func TestGetOrder(t *testing.T) {
+	order_id := createOrder(t)
+	order, err := dbManager.GetOrder(order_id)
+	require.NoError(t, err)
+	require.NotEmpty(t, order)
+	deleteOrder(t, order_id)
+}
+
+func TestUpdateOrder(t *testing.T) {
+	order_id := createOrder(t)
+	order, err := dbManager.UpdateOrder(&Order{
+		Id: order_id,
+		CustomerID: 1223,
+		Address: "Uchtepa tumani 30-13-83",
+		TotalAmount:  1400,
+		OrderItems: []*OrderItem{
+			{
+				ProductName: "Iphone 13 Pro Max",
+				ProductID: 50,
+				Count: 2,
+				TotalPrice: 500,
+				Status: true,
+			},
+			{
+				ProductName: "Iphone 14 Pro Max",
+				ProductID: 51,
+				Count: 2,
+				TotalPrice: 540,
+				Status: true,
+			},
+		},
+	})
+	require.NoError(t, err)
+	require.NotEmpty(t, order)
+	deleteOrder(t, order_id)
+}
+
+func TestDeleteOrder(t *testing.T) {
+	order_id := createOrder(t)
+	deleteOrder(t, order_id)
+}
+
+func TestGetAllOrders(t *testing.T) {
+	order_id := createOrder(t)
+	orders, err := dbManager.GetAllOrders(&OrderParam{
+		Limit: 10,
+		Page: 1,
+	})
+	require.NoError(t, err)
+	require.GreaterOrEqual(t, len(orders.Orders), 1)
+	require.NotEmpty(t, orders)
+	deleteOrder(t, order_id)
+}
