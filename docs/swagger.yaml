@@ -1,24 +1,52 @@
 definitions:
+  main.Category:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      name:
+        type: string
+    type: object
+  main.CreateCategory:
+    properties:
+      image_url:
+        type: string
+      name:
+        type: string
+    type: object
   main.CreateOrGetCustomer:
     properties:
       balance:
         type: number
       birth_date:
         type: string
-      created_at:
-        type: string
       firstname:
         type: string
       gender:
         type: boolean
-      id:
-        type: integer
       lastname:
         type: string
       phone_number:
         type: string
     type: object
+  main.GetAllCustomer:
+    properties:
+      count:
+        type: integer
+      customers:
+        items:
+          $ref: '#/definitions/main.CreateOrGetCustomer'
+        type: array
+    type: object
   main.ResponseError:
+    properties:
+      message:
+        type: string
+    type: object
+  main.ResponseOK:
     properties:
       message:
         type: string
@@ -30,6 +58,88 @@ info:
   title: Swagger for Shop api
   version: "1.0"
 paths:
+  /shop/category/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get Category by ID
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Category'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ResponseError'
+      summary: Get Category by ID
+      tags:
+      - category
+  /shop/category/create:
+    post:
+      consumes:
+      - application/json
+      description: Get All Customer
+      parameters:
+      - description: Category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Category'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ResponseError'
+      summary: Create Category
+      tags:
+      - category
+  /shop/category/update/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update category with it's ID
+      parameters:
+      - description: Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Category'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ResponseError'
+      summary: Update Category with id
+      tags:
+      - category
   /shop/customer/{id}:
     get:
       consumes:
@@ -53,6 +163,116 @@ paths:
           schema:
             $ref: '#/definitions/main.ResponseError'
       summary: Get customer Info by id
+      tags:
+      - customer
+  /shop/customer/all:
+    get:
+      description: Get All Customer
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: page
+        in: query
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.GetAllCustomer'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ResponseError'
+      summary: Get all Customer
+      tags:
+      - customer
+  /shop/customer/create:
+    post:
+      consumes:
+      - application/json
+      description: Create Customer
+      parameters:
+      - description: Customer
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateOrGetCustomer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ResponseError'
+      summary: Create customer
+      tags:
+      - customer
+  /shop/customer/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete customer
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.ResponseOK'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ResponseError'
+      summary: Delete customer by it's id
+      tags:
+      - customer
+  /shop/customer/update/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update customer
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Customer
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateOrGetCustomer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.CreateOrGetCustomer'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ResponseError'
+      summary: Update customer by it's id
       tags:
       - customer
 swagger: "2.0"

@@ -11,11 +11,6 @@ type Category struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type CreateCategory struct {
-	Name      string    `json:"name"`
-	ImageUrl  string    `json:"image_url"`
-}
-
 type AllCategories struct {
 	Categories []*Category
 }

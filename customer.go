@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -10,7 +11,7 @@ type Customer struct {
 	LastName    string    `json:"lastname"`
 	PhoneNumber string    `json:"phone_number"`
 	Gender      bool      `json:"gender"`
-	BirthDate   time.Time `json:"birth_date"`
+	BirthDate   string `json:"birth_date"`
 	Balance     float64   `json:"balance"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -29,8 +30,7 @@ type CustomerParams struct {
 	Surname string `json:"surname"`
 }
 
-func (d *DBManager) CreateCustomer(customer *CreateOrGetCustomer) (*CreateOrGetCustomer, error) {
-	var result CreateOrGetCustomer
+func (d *DBManager) CreateCustomer(customer *CreateOrGetCustomer) (int64, error) {
 	queryInsert := `
 		INSERT INTO customer(
 			firstname,
@@ -40,8 +40,9 @@ func (d *DBManager) CreateCustomer(customer *CreateOrGetCustomer) (*CreateOrGetC
 			birth_date,
 			balance
 		) VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, firstname, lastname, phone_number, gender, birth_date, balance, created_at
+		RETURNING id
 	`
+	var result int64
 	err := d.db.QueryRow(
 		queryInsert,
 		customer.FirstName,
@@ -51,36 +52,27 @@ func (d *DBManager) CreateCustomer(customer *CreateOrGetCustomer) (*CreateOrGetC
 		customer.BirthDate,
 		customer.Balance,
 	).Scan(
-		&result.Id,
-		&result.FirstName,
-		&result.LastName,
-		&result.PhoneNumber,
-		&result.Gender,
-		&result.BirthDate,
-		&result.Balance,
-		&result.CreatedAt,
+		&result,
 	)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return &result, nil
+	return result, nil
 }
 
 func (d *DBManager) GetCustomer(customer_id int64) (*CreateOrGetCustomer, error) {
 	var result CreateOrGetCustomer
-	queryGet := `select id, firstname, lastname, phone_number, gender, birth_date, balance, created_at from customer where id  = $1 and deleted_at is null`
+	queryGet := `select firstname, lastname, phone_number, gender, birth_date, balance from customer where id  = $1 and deleted_at is null`
 	err := d.db.QueryRow(
 		queryGet,
 		customer_id,
 	).Scan(
-		&result.Id,
 		&result.FirstName,
 		&result.LastName,
 		&result.PhoneNumber,
 		&result.Gender,
 		&result.BirthDate,
 		&result.Balance,
-		&result.CreatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -100,7 +92,7 @@ func (d *DBManager) UpdateCustomer(customer *Customer) (*CreateOrGetCustomer, er
 		balance = $6, 
 		updated_at = $7 
 	WHERE id = $8
-	RETURNING id, firstname, lastname, phone_number, gender, birth_date, balance, created_at
+	RETURNING firstname, lastname, phone_number, gender, birth_date, balance
 	`
 	err := d.db.QueryRow(
 		queryUpdate,
@@ -113,14 +105,12 @@ func (d *DBManager) UpdateCustomer(customer *Customer) (*CreateOrGetCustomer, er
 		time.Now(),
 		customer.Id,
 	).Scan(
-		&result.Id,
 		&result.FirstName,
 		&result.LastName,
 		&result.PhoneNumber,
 		&result.Gender,
 		&result.BirthDate,
 		&result.Balance,
-		&result.CreatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -132,7 +122,14 @@ func (d *DBManager) DeleteCustomer(customer_id int64) error {
 	queryDelete := `
 		delete from customer where id = $1
 	`
-	_, err := d.db.Exec(queryDelete, customer_id)
+	row, err := d.db.Exec(queryDelete, customer_id)
+	res, err := row.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if res == 0 {
+		return sql.ErrNoRows
+	}
 	if err != nil {
 		return err
 	}
@@ -152,14 +149,12 @@ func (d *DBManager) GetCustomers(param *CustomerParams) (*GetAllCustomer, error)
 	}
 	queryGetAll := `
 		SELECT 
-			id,
 			firstname,
 			lastname,
 			phone_number,
 			gender,
 			birth_date,
-			balance,
-			created_at
+			balance
 		FROM customer 
 	` + filter + `
 		LIMIT $1 OFFSET $2
@@ -173,14 +168,12 @@ func (d *DBManager) GetCustomers(param *CustomerParams) (*GetAllCustomer, error)
 	for rows.Next() {
 		var result CreateOrGetCustomer
 		err := rows.Scan(
-			&result.Id,
 			&result.FirstName,
 			&result.LastName,
 			&result.PhoneNumber,
 			&result.Gender,
 			&result.BirthDate,
 			&result.Balance,
-			&result.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
